@@ -1,59 +1,78 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: UNLICENSED 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract EducationalCredential is Ownable {
-
+contract EducationalCredential {
     struct Certificate {
         address issuer;
         bytes32 studentNameHash;
-        bytes32 degree; // Use bytes32 for efficiency
+        bytes32 degree;
         uint256 issueDate;
-        Status status; // Enum to represent certificate status
+        Status status;
     }
 
-    enum Status { None, Verified, Revoked }
+    enum Status { None, Verified }
 
-    mapping(address => Certificate[]) public certificates;
+    mapping(address => Certificate[]) public certificatesByStudent;
+    mapping(uint256 => Certificate) public certificatesById;
 
-    event CertificateIssued(address indexed studentAddress, bytes32 studentNameHash, bytes32 degree, uint256 issueDate);
-    event CertificateStatusUpdated(address indexed studentAddress, uint256 certificateIndex, Status status);
+    uint256 private nextCertificateId = 1;
 
-    constructor() Ownable(msg.sender) {}
+    address public owner;
 
-    // Function to issue a new certificate (only owner can call)
-    function issueCertificate(address _studentAddress, bytes32 _studentNameHash, bytes32 _degree) external onlyOwner {
+    event CertificateIssued(uint256 indexed certificateId, address indexed studentAddress, bytes32 studentNameHash, bytes32 degree, uint256 issueDate);
+    event CertificateVerified(uint256 indexed certificateId);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    function issueCertificate(address _studentAddress, bytes32 _studentNameHash, bytes32 _degree) external onlyOwner returns(uint256) {
         require(_degree != bytes32(0), "Degree name cannot be empty");
 
-        certificates[_studentAddress].push(Certificate(msg.sender, _studentNameHash, _degree, block.timestamp, Status.None));
-        emit CertificateIssued(_studentAddress, _studentNameHash, _degree, block.timestamp);
+        uint256 certificateId = nextCertificateId;
+        nextCertificateId++;
+
+        Certificate memory cert = Certificate(
+            msg.sender,
+            _studentNameHash,
+            _degree,
+            block.timestamp,
+            Status.None
+        );
+
+        certificatesByStudent[_studentAddress].push(cert);
+        certificatesById[certificateId] = cert;
+
+        emit CertificateIssued(certificateId, _studentAddress, _studentNameHash, _degree, block.timestamp);
+        return certificateId;
     }
 
-    // Function to update certificate status (only owner can call)
-    function updateCertificateStatus(address _studentAddress, uint256 _certificateIndex, Status _status) external onlyOwner {
-        require(_certificateIndex < certificates[_studentAddress].length, "Certificate index out of range");
+    function verifyCertificate(uint256 _certificateId) external {
+        Certificate storage cert = certificatesById[_certificateId];
+        require(cert.status != Status.Verified, "Certificate already verified");
 
-        certificates[_studentAddress][_certificateIndex].status = _status;
-        emit CertificateStatusUpdated(_studentAddress, _certificateIndex, _status);
+        cert.status = Status.Verified;
+        emit CertificateVerified(_certificateId);
     }
 
-    // Function to get the total number of certificates for a student
-    function getCertificateCount(address _studentAddress) external view returns (uint256) {
-        return certificates[_studentAddress].length;
+    function getNumberOfCertificates(address _studentAddress) external view returns (uint256) {
+        return certificatesByStudent[_studentAddress].length;
     }
 
-    // Function to get certificate details by index for a student
-    function getCertificateDetails(address _studentAddress, uint256 _certificateIndex) external view returns (
+    function getCertificateDetails(uint256 _certificateId) external view returns (
         address issuer,
         bytes32 studentNameHash,
         bytes32 degree,
         uint256 issueDate,
         Status status
     ) {
-        require(_certificateIndex < certificates[_studentAddress].length, "Certificate index out of range");
-
-        Certificate memory cert = certificates[_studentAddress][_certificateIndex];
+        Certificate memory cert = certificatesById[_certificateId];
+        require(cert.issuer != address(0), "Certificate not found");
         return (cert.issuer, cert.studentNameHash, cert.degree, cert.issueDate, cert.status);
     }
 }

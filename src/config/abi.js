@@ -1,29 +1,18 @@
 export const abi = [
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'owner',
-        type: 'address',
-      },
-    ],
-    name: 'OwnableInvalidOwner',
-    type: 'error',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
-    name: 'OwnableUnauthorizedAccount',
-    type: 'error',
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
   },
   {
     anonymous: false,
     inputs: [
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'certificateId',
+        type: 'uint256',
+      },
       {
         indexed: true,
         internalType: 'address',
@@ -38,9 +27,9 @@ export const abi = [
       },
       {
         indexed: false,
-        internalType: 'string',
+        internalType: 'bytes32',
         name: 'degree',
-        type: 'string',
+        type: 'bytes32',
       },
       {
         indexed: false,
@@ -57,39 +46,8 @@ export const abi = [
     inputs: [
       {
         indexed: true,
-        internalType: 'address',
-        name: 'studentAddress',
-        type: 'address',
-      },
-      {
-        indexed: false,
         internalType: 'uint256',
-        name: 'certificateIndex',
-        type: 'uint256',
-      },
-    ],
-    name: 'CertificateRevoked',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'studentAddress',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'certificateIndex',
-        type: 'uint256',
-      },
-      {
-        indexed: false,
-        internalType: 'uint256',
-        name: 'verifiedDate',
+        name: 'certificateId',
         type: 'uint256',
       },
     ],
@@ -97,38 +55,14 @@ export const abi = [
     type: 'event',
   },
   {
-    anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'previousOwner',
-        type: 'address',
-      },
-      {
-        indexed: true,
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
-      },
-    ],
-    name: 'OwnershipTransferred',
-    type: 'event',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
       {
         internalType: 'uint256',
         name: '',
         type: 'uint256',
       },
     ],
-    name: 'certificates',
+    name: 'certificatesById',
     outputs: [
       {
         internalType: 'address',
@@ -141,9 +75,9 @@ export const abi = [
         type: 'bytes32',
       },
       {
-        internalType: 'string',
+        internalType: 'bytes32',
         name: 'degree',
-        type: 'string',
+        type: 'bytes32',
       },
       {
         internalType: 'uint256',
@@ -151,14 +85,9 @@ export const abi = [
         type: 'uint256',
       },
       {
-        internalType: 'bool',
-        name: 'isVerified',
-        type: 'bool',
-      },
-      {
-        internalType: 'bool',
-        name: 'isRevoked',
-        type: 'bool',
+        internalType: 'enum EducationalCredential.Status',
+        name: 'status',
+        type: 'uint8',
       },
     ],
     stateMutability: 'view',
@@ -168,31 +97,51 @@ export const abi = [
     inputs: [
       {
         internalType: 'address',
-        name: '_studentAddress',
+        name: '',
         type: 'address',
       },
-    ],
-    name: 'getCertificateCount',
-    outputs: [
       {
         internalType: 'uint256',
         name: '',
         type: 'uint256',
       },
     ],
+    name: 'certificatesByStudent',
+    outputs: [
+      {
+        internalType: 'address',
+        name: 'issuer',
+        type: 'address',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'studentNameHash',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'bytes32',
+        name: 'degree',
+        type: 'bytes32',
+      },
+      {
+        internalType: 'uint256',
+        name: 'issueDate',
+        type: 'uint256',
+      },
+      {
+        internalType: 'enum EducationalCredential.Status',
+        name: 'status',
+        type: 'uint8',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_studentAddress',
-        type: 'address',
-      },
-      {
         internalType: 'uint256',
-        name: '_certificateIndex',
+        name: '_certificateId',
         type: 'uint256',
       },
     ],
@@ -209,9 +158,9 @@ export const abi = [
         type: 'bytes32',
       },
       {
-        internalType: 'string',
+        internalType: 'bytes32',
         name: 'degree',
-        type: 'string',
+        type: 'bytes32',
       },
       {
         internalType: 'uint256',
@@ -219,14 +168,28 @@ export const abi = [
         type: 'uint256',
       },
       {
-        internalType: 'bool',
-        name: 'isVerified',
-        type: 'bool',
+        internalType: 'enum EducationalCredential.Status',
+        name: 'status',
+        type: 'uint8',
       },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
       {
-        internalType: 'bool',
-        name: 'isRevoked',
-        type: 'bool',
+        internalType: 'address',
+        name: '_studentAddress',
+        type: 'address',
+      },
+    ],
+    name: 'getNumberOfCertificates',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
       },
     ],
     stateMutability: 'view',
@@ -245,13 +208,19 @@ export const abi = [
         type: 'bytes32',
       },
       {
-        internalType: 'string',
+        internalType: 'bytes32',
         name: '_degree',
-        type: 'string',
+        type: 'bytes32',
       },
     ],
     name: 'issueCertificate',
-    outputs: [],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
     stateMutability: 'nonpayable',
     type: 'function',
   },
@@ -269,53 +238,10 @@ export const abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'renounceOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [
-      {
-        internalType: 'address',
-        name: '_studentAddress',
-        type: 'address',
-      },
       {
         internalType: 'uint256',
-        name: '_certificateIndex',
-        type: 'uint256',
-      },
-    ],
-    name: 'revokeCertificate',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
-      },
-    ],
-    name: 'transferOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '_studentAddress',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_certificateIndex',
+        name: '_certificateId',
         type: 'uint256',
       },
     ],
